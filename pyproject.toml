@@ -1,0 +1,7 @@
+[project]
+name = "example-trainings"
+version = "0.0.0"
+description = "A repository of training examples of various models, methods, and tasks."
+readme = "README.md"
+requires-python = ">=3.13.3"
+dependencies = []
