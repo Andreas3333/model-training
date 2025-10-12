@@ -1,7 +1,6 @@
 import re
 import io
 import os
-import sys
 import secrets
 import hashlib
 from datetime import datetime
@@ -28,30 +27,41 @@ def get_date():
     return f"{year}-{month:02d}-{day:02d}-{hour:02d}:{minute:02d}:{second:02d}"
 
 
-def extract_csv(model_output: str) -> pd.DataFrame:
-    """Return a Dataframe of the cleaned CSV data from generated model_output
+def extract_csv(model_output: str, keywords: list[str]) -> pd.DataFrame | None:
+    """Return a Dataframe containing generated content. Use a keyword in the header to extract the specific section.
+    None if keyword is not found.
+
+    Parameters
+    ----------
+    model_output : str
+    header_key : list[str]   Keyword in header
     """
     headers_to_split_on = [
         ("#", "Header 1"),
         ("##", "Header 2"),
         ("###", "Header 3"),
+        ("####", "Header 4"),
+        ("#####", "Header 5"),
+        ("######", "Header 6"),
     ]
 
     markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on)
     md_header_splits = markdown_splitter.split_text(model_output)
-
-    keyword = "Output: CSV Content"
+    print(len(md_header_splits)) ## TODO: remove
+    header_found = False
     for doc in md_header_splits:
-        header_found = False
         for header_key, header_value in doc.metadata.items():
-            if keyword.lower() in header_value.lower():
-                header_found = True
-                break
+            for keyword in keywords:
+                if keyword.lower() in header_value.lower():
+                    header_found = True
+                    break
 
         if header_found:
             content = doc.page_content
             break
 
+    if not header_found:
+        return None
     content = content.strip("```csv")
     content = content.strip("---")
     content = re.sub("```", "", content)
