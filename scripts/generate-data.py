@@ -16,18 +16,16 @@ from lib.utils import extract_csv, create_split
 
 usage_info = f"""
 Generate synthetic data for an example training. By default uses `Qwen/Qwen3-4B-Instruct-2507`.
-The prompt can be provided interactively by setting `INTERACTIVE_SYNTHETIC_GENERATION` to True.
-Or from a json file with ("prompt_title" "system" "user") keys. The generated training data is
-saved to example data/ directory of the example training.
-
-Usage: {__name__} [ARGUMENTS]
+The prompt can be provided interactively by setting `INTERACTIVE_SYNTHETIC_GENERATION` to True
+or from a json file with ("prompt_title" "system" "user") keys. The generated training data is
+split and saved to data/ directory of the example training.
 """
 
-parser = argparse.ArgumentParser(description=usage_info)
-parser.add_argument('example_training', nargs='?', metavar='str', type=str, help="The example training to generate data for")
-parser.add_argument('prompt_file', nargs='?', metavar='str', type=str, help=f"The prompt file to use as input to the model")
-parser.add_argument('train_split', default=.7, nargs='?', metavar='float', type=float, help="The portion for training split")
-parser.add_argument('test_split', default=.3, nargs='?', metavar='float', type=float, help="The portion for test split")
+parser = argparse.ArgumentParser(description=usage_info, usage=f"{os.path.basename(__file__)} [Positional Args]")
+parser.add_argument('example_training', nargs='?', type=str, help="The example training to generate data for (required)")
+parser.add_argument('prompt_file', nargs='?', type=str, help=f"The prompt file to use as input to the model (required)")
+parser.add_argument('train_split', default=.7, nargs='?', type=float, help="The portion for training split (optional: default .7)")
+parser.add_argument('test_split', default=.3, nargs='?', type=float, help="The portion for test split (optional: default .3)")
 args = parser.parse_args()
 
 checkpoint = "Qwen/Qwen3-4B-Instruct-2507"
@@ -39,11 +37,11 @@ else:
     device = torch.device("cpu")
 
 
-BASE_DATA_DIR = args.example_training
-BASE_DATA_DIR += "/data"
+BASE_DIR = args.example_training
+BASE_DATA_DIR = BASE_DIR + "/data"
 
 configuration_message = f"""
-Generating synthetic training data for `{BASE_DATA_DIR}` example training using:
+Generating synthetic training data for `{BASE_DIR}` example training using:
 
 - model: {checkpoint}
 - device: {device}
@@ -86,13 +84,20 @@ generated_ids = model.generate(
 end_time = time.time()
 elapsed_time = end_time - start_time
 
-print(f"Generated in {elapsed_time:.2f} seconds.")
 output_ids = generated_ids[0][len(model_inputs.input_ids[0]):].tolist()
 content = tokenizer.decode(output_ids, skip_special_tokens=True)
 print(f"{checkpoint} output: ", content)
 
-df = extract_csv(content["Category"])
+df = extract_csv(content, ["Output:", "CSV", "Synthetic Bank Transaction Data", "bank_transactions.csv"])
+if df is None:
+    out_file = f"{BASE_DATA_DIR}/gen_out_{prompt_title}.md"
+    print(f"Header `Output:` can not be found in generated output. Saving output to {out_file}")
+    with open(out_file, "x") as f:
+        f.write(content)
+    sys.exit()
+
 classes = df["Category"].unique().tolist()
+
 number_of_examples = []
 for cat in classes:
     number_of_examples.append(len(df[df["Category"] == cat]))
@@ -108,7 +113,7 @@ print(f"Classes and number of examples: (total, {sum(number_of_examples)})")
 print(classes)
 print(number_of_examples)
 
-user_response = input(f"Create splits and save the generated synthetic data? (y/N)")
+user_response = input(f"Create splits and save the generated synthetic data? (y/N)\n>>> ")
 
 if user_response == "y":
     class_set_data = { "prompt_title": prompt_title, "description": "Transaction classes", "classes": classes}
@@ -116,5 +121,6 @@ if user_response == "y":
         json.dump(class_set_data, f)
 
     create_split(df, f"{BASE_DATA_DIR}/{prompt_title}", (.7,.3), True)
-else:
-    print("Finished...")
+
+print("Finished...")
+print(f"Generated in {elapsed_time:.2f} seconds.")
