@@ -47,7 +47,7 @@ def extract_csv(model_output: str, keywords: list[str]) -> pd.DataFrame | None:
 
     markdown_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on)
     md_header_splits = markdown_splitter.split_text(model_output)
-    print(len(md_header_splits)) ## TODO: remove
+
     header_found = False
     for doc in md_header_splits:
         for header_key, header_value in doc.metadata.items():

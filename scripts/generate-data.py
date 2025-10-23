@@ -117,7 +117,7 @@ user_response = input(f"Create splits and save the generated synthetic data? (y/
 
 if user_response == "y":
     class_set_data = { "prompt_title": prompt_title, "description": "Transaction classes", "classes": classes}
-    with open(f"{BASE_DATA_DIR}/class_set.json", "x") as f:
+    with open(f"{BASE_DIR}/class_set.json", "x") as f:
         json.dump(class_set_data, f)
 
     create_split(df, f"{BASE_DATA_DIR}/{prompt_title}", (.7,.3), True)
