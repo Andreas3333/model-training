@@ -15,14 +15,14 @@ from lib.utils import extract_csv, create_split
 
 
 usage_info = f"""
-Generate synthetic data for an example training. By default uses `Qwen/Qwen3-4B-Instruct-2507`.
+Generate synthetic data for a model training. By default uses `Qwen/Qwen3-4B-Instruct-2507`.
 The prompt can be provided interactively by setting `INTERACTIVE_SYNTHETIC_GENERATION` to True
 or from a json file with ("prompt_title" "system" "user") keys. The generated training data is
-split and saved to data/ directory of the example training.
+split and saved to data/ directory of the model training.
 """
 
 parser = argparse.ArgumentParser(description=usage_info, usage=f"{os.path.basename(__file__)} [Positional Args]")
-parser.add_argument('example_training', nargs='?', type=str, help="The example training to generate data for (required)")
+parser.add_argument('model_training', nargs='?', type=str, help="The model training to generate data for (required)")
 parser.add_argument('prompt_file', nargs='?', type=str, help=f"The prompt file to use as input to the model (required)")
 parser.add_argument('train_split', default=.7, nargs='?', type=float, help="The portion for training split (optional: default .7)")
 parser.add_argument('test_split', default=.3, nargs='?', type=float, help="The portion for test split (optional: default .3)")
@@ -37,11 +37,11 @@ else:
     device = torch.device("cpu")
 
 
-BASE_DIR = args.example_training
+BASE_DIR = args.model_training
 BASE_DATA_DIR = BASE_DIR + "/data"
 
 configuration_message = f"""
-Generating synthetic training data for `{BASE_DIR}` example training using:
+Generating synthetic training data for `{BASE_DIR}` model training using:
 
 - model: {checkpoint}
 - device: {device}

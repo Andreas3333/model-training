@@ -208,3 +208,26 @@ __marimo__/
 
 ## Excludes
 !scripts/lib/
+
+## Model files
+*.safetensors
+*.pt
+
+## Checkpoints
+checkpoints/
+run*/
+
+## Tensorboard data
+tb*/
+
+## macos
+.DS_Store
+
+## .vscode
+.vscode/
+
+## temporary directories
+tmp/
+temp/
+.tmp/
+.temp/

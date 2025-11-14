@@ -1,3 +1,3 @@
-# example-trainings
+# model-training
 
-A repository of training examples of various models, methods, and tasks.
+A repository of model trainings for various tasks.
