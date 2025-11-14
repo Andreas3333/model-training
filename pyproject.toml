@@ -1,7 +1,7 @@
 [project]
-name = "example-trainings"
+name = "model-training"
 version = "0.0.0"
-description = "A repository of training examples of various models, methods, and tasks."
+description = "A repository of model trainings for various tasks."
 readme = "README.md"
 requires-python = ">=3.13.3"
 dependencies = [

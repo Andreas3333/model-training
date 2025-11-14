@@ -8,22 +8,22 @@ from pathlib import Path
 
 if len(sys.argv) == 1 or len(sys.argv) in ["help", "--help", "-h"]:
     usage_info = """
-    Build out directory structure for example training. For example `text_classification_bert_sft` produces:
+    Build out directory structure for a model training. For example `bert_for_seq_classification` produces:
 
-    text_classification_bert_sft/   - base directory
+    bert_for_seq_classification/   - base directory
         ├── data                    - data (optional)
-        ├── inference.py            - load and use ft model
+        ├── inference.py            - use model checkpoint
         ├── main.py                 - train script
         ├── model.py                - model
         └── README.md
     
-    Usage: `example_training_directory`
+    Usage: `model_training_directory`
     """
     print(usage_info)
     sys.exit(0)
 
 
-PROJECT_ROOT = "example-trainings"
+PROJECT_ROOT = "model-training"
 
 if os.getcwd().split("/")[-1] != PROJECT_ROOT:
     print(f"[Error] Run script from the project root directory, {PROJECT_ROOT}")
@@ -31,7 +31,7 @@ if os.getcwd().split("/")[-1] != PROJECT_ROOT:
 
 BASE_DIR = sys.argv[1]
 
-proceed = input(f"Proceed creating example training directory? (y/N)\n\n- {BASE_DIR}\n")
+proceed = input(f"Proceed creating model training directory? (y/N)\n\n- {BASE_DIR}\n")
 
 if proceed == 'y':
     os.mkdir(BASE_DIR)
@@ -40,7 +40,7 @@ if proceed == 'y':
     for file in files:
         Path(f"{BASE_DIR}/{file}").touch()
     Path(f"{BASE_DIR}/README.md").write_text(f"# {BASE_DIR}\n")
-    print(f"Created {BASE_DIR} example training directory")
+    print(f"Created {BASE_DIR} model training directory")
 else:
     print("Exiting...")
 
