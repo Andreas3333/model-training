@@ -1,5 +1,5 @@
 {
-    "prompt_title": "00_text_classification_bert_sft",
+    "prompt_title": "00_bert_for_seq_classification",
     "system": [
         "You are a synthetic data generator tool. Your goal is to generate labeled bank transaction text data that can",
         "be used for supervised fine tunning a BERT model for text classification of back transaction data. The dataset",
@@ -14,7 +14,7 @@
         "for debt transactions. You need to generate reasonable positive values for Amount Credit for each Transaction Description for credit transactions.",
         "You need to calculate the new Balance of the account after the debit or credit transaction is posted to the account. The 14 categories",
         "that you need to generate transaction data for: ",
-        "Car Insurance, Coffee, Credit Card, Gas, Groceries, Misc, Mobile Phone, Rent - Mortgage, Restaurant, Student Loan, Subscription, Utilities Electric, Utilities Home Internet, Utilities Water.",
+        "Car Insurance, Coffee, Credit Card, Gas, Groceries, Misc, Mobile Phone, Rent - Mortgage, Restaurant, Student Loan, Subscription, Utilities Electric, Home Internet, Utilities Water.",
         "Do not add to or alter the list of provided categories. Do not explicitly include the Category label in the Transaction Description.",
         "User real company names for the Transaction Descriptions, for example a Coffee transaction could be described as Starbucks Seattle WA. And a",
         "Groceries Transaction Description could be described as WA-Mart Super Cent Chicago IL or Whole Foods Los Angeles CA. A Credit Card",

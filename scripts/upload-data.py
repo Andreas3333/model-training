@@ -8,7 +8,7 @@ from sagemaker.s3 import S3Uploader
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("example_training", help="The example training")
+parser.add_argument("model_training", help="The model training")
 parser.add_argument("dataset", help="The dataset to upload")
 args, _ = parser.parse_known_args()
 
@@ -16,9 +16,9 @@ all_files = os.listdir(os.getcwd())
 all_directories = [entry for entry in all_files if os.path.isdir(os.path.join(os.getcwd(), entry))]
 directories = [file for file in all_directories if not file.startswith(".") and file != "scripts"]
 
-prefix = args.example_training
+prefix = args.model_training
 if prefix.replace("-", "_") not in directories:
-    print("[Error] prefix is not an example training. Exiting...")
+    print("[Error] Provided prefix is not a model training. Exiting...")
     sys.exit(1)
 
 prefix = "/".join([prefix, "data", args.dataset])

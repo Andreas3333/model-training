@@ -31,10 +31,12 @@ def extract_csv(model_output: str, keywords: list[str]) -> pd.DataFrame | None:
     """Return a Dataframe containing generated content. Use a keyword in the header to extract the specific section.
     None if keyword is not found.
 
-    Parameters
-    ----------
-    model_output : str
-    header_key : list[str]   Keyword in header
+    Args:
+    model_output: str       llm output
+    header_key: list[str]   Keyword in header
+
+    Returns:
+    dataframe
     """
     headers_to_split_on = [
         ("#", "Header 1"),
@@ -70,17 +72,17 @@ def extract_csv(model_output: str, keywords: list[str]) -> pd.DataFrame | None:
     return pd.read_csv(io.StringIO(content))
 
 
-def create_split(dataset: pd.DataFrame, example_training: str, proportions: tuple[float,float], shuffle: bool = False) -> None:
-    """Splits and writes output to files of the example_training.
+def create_split(dataset: pd.DataFrame, model_training: str, proportions: tuple[float,float], shuffle: bool = False) -> None:
+    """Splits and writes output to files of the model_training.
 
     Args:
     dataset (Dataframe):    Data to split
-    example_training (str): Example training base data directory
+    model_training (str):   Model training base data directory
     proportions (tuple):    Proportions of split
     shuffle (bool):         Optionally shuffle before split
     """
-    os.makedirs(f"{example_training}/train", exist_ok=True)
-    os.makedirs(f"{example_training}/test", exist_ok=True)
+    os.makedirs(f"{model_training}/train", exist_ok=True)
+    os.makedirs(f"{model_training}/test", exist_ok=True)
     splits_proportions = np.array(proportions)
 
     if shuffle:
@@ -88,6 +90,6 @@ def create_split(dataset: pd.DataFrame, example_training: str, proportions: tupl
 
     train, test = np.array_split(dataset, (splits_proportions[:-1].cumsum() * len(dataset)).astype(int))
 
-    pd.DataFrame(train).to_csv(f'{example_training}/train/train-set.csv', index=False)
-    pd.DataFrame(test).to_csv(f'{example_training}/test/test-set.csv', index=False)
+    pd.DataFrame(train).to_csv(f'{model_training}/train/train-set.csv', index=False)
+    pd.DataFrame(test).to_csv(f'{model_training}/test/test-set.csv', index=False)
 
