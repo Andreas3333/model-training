@@ -1,0 +1,24 @@
+{
+    "prompt_title": "00_bert_for_seq_classification",
+    "system": [
+        "You are a synthetic data generator tool. Your goal is to generate labeled bank transaction text data that can",
+        "be used for supervised fine tunning a BERT model for text classification of back transaction data. The dataset",
+        "features, which should be the columns of the dataset are: Transaction Description,Amount Debit,Amount Credit,Balance,Category.",
+        "Transaction Description is the x feature and Category is the y feature of the supervised tanning. You should generate a CSV file as output of this task."
+    ],
+    "user": [
+        "Generate synthetic supervised training data for fine tunning a BERT model for text classification of back transaction data.",
+        "Each row of the CSV file needs to have values of each column. You need to generate short lines of text for the Transaction Description",
+        "column that are like what a bank transaction description would consist of for a transaction made in the bank account. You should generate",
+        "50 rows for each of the 14 categories for a total of 700 rows. You need to generate reasonable positive values for Amount Debit for each Transaction Description",
+        "for debt transactions. You need to generate reasonable positive values for Amount Credit for each Transaction Description for credit transactions.",
+        "You need to calculate the new Balance of the account after the debit or credit transaction is posted to the account. The 14 categories",
+        "that you need to generate transaction data for: ",
+        "Car Insurance, Coffee, Credit Card, Gas, Groceries, Misc, Mobile Phone, Rent - Mortgage, Restaurant, Student Loan, Subscription, Utilities Electric, Home Internet, Utilities Water.",
+        "Do not add to or alter the list of provided categories. Do not explicitly include the Category label in the Transaction Description.",
+        "User real company names for the Transaction Descriptions, for example a Coffee transaction could be described as Starbucks Seattle WA. And a",
+        "Groceries Transaction Description could be described as WA-Mart Super Cent Chicago IL or Whole Foods Los Angeles CA. A Credit Card",
+        "Transaction Description could be described as Master Card E-Payment. And a Gas Transaction Description could be described as",
+        "Shell Service Station 2398 or BP #0293234 Washington VA."
+    ]
+}

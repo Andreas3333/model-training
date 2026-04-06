@@ -1,5 +1,17 @@
-# example-trainings scripts
+# model-training project utility scripts
 
-## ./scripts/generate-data.py example usage
+## scripts/generate-data.py
 
- ./scripts/generate-data.py "text_classification_bert_sft" "00_text_classification_bert_sft.json"
+### Usage
+
+`./scripts/generate-data.py -i bert_for_seq_classification`
+
+or using a file
+
+`./scripts/generate-data.py bert_for_seq_classification 00_bert_for_seq_classification.json`
+
+## scaffold-example-dir.py
+
+### Usage
+
+`./scaffold-example-dir.py bert_for_seq_classification`

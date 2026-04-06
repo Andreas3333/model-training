@@ -10,27 +10,45 @@ import torch
 import pandas as pd
 import matplotlib.pyplot as plt
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from huggingface_hub import scan_cache_dir, snapshot_download
 
 from lib.utils import extract_csv, create_split
+from rich import print
 
 
 usage_info = f"""
-Generate synthetic data for a model training. By default uses `Qwen/Qwen3-4B-Instruct-2507`.
-The prompt can be provided interactively by setting `INTERACTIVE_SYNTHETIC_GENERATION` to True
-or from a json file with ("prompt_title" "system" "user") keys. The generated training data is
-split and saved to data/ directory of the model training.
+Generate synthetic data for a model training. Uses `Qwen/Qwen3-4B-Instruct-2507` by default.
+The prompt can be provided interactively by setting the -i option or from a json file with
+("prompt_title" "system" "user") keys. The generated training data is split and saved to
+data/ directory of the model training.
 """
 
 parser = argparse.ArgumentParser(description=usage_info, usage=f"{os.path.basename(__file__)} [Positional Args]")
-parser.add_argument('model_training', nargs='?', type=str, help="The model training to generate data for (required)")
-parser.add_argument('prompt_file', nargs='?', type=str, help=f"The prompt file to use as input to the model (required)")
+
+parser.add_argument("-m", "--model", type=str, help="Model to use for generation")
+parser.add_argument('-i', '--interactive', action='store_true', help="Interactive mode")
+parser.add_argument('model_training', type=str, help="The model training to generate data for (required)")
+parser.add_argument('prompt_file', nargs='?', type=str, help="The prompt file to use as input to the model (required)")
 parser.add_argument('train_split', default=.7, nargs='?', type=float, help="The portion for training split (optional: default .7)")
 parser.add_argument('test_split', default=.3, nargs='?', type=float, help="The portion for test split (optional: default .3)")
+
 args = parser.parse_args()
 
-checkpoint = "Qwen/Qwen3-4B-Instruct-2507"
+if args.model:
+    checkpoint = args.model
+    cache = scan_cache_dir()
+    for repo in cache.repos:
+        if checkpoint == repo.repo_id:
+            # Model already cached
+            os.environ['HF_HUB_OFFLINE'] = '1'
+            break
+        else:
+            # del os.environ['HF_HUB_OFFLINE']
+            snapshot_download(repo_id=checkpoint)
+            os.environ['HF_HUB_OFFLINE'] = '1'
+else:
+    checkpoint = "Qwen/Qwen3-4B-Instruct-2507"
 
-os.environ['HF_HUB_OFFLINE'] = '1'
 if torch.accelerator.is_available():
     device = torch.accelerator.current_accelerator()
 else:
@@ -49,37 +67,45 @@ Generating synthetic training data for `{BASE_DIR}` model training using:
 print(configuration_message)
 
 
-tokenizer = AutoTokenizer.from_pretrained(checkpoint, local_files_only=True, use_safetensors=True, device=device)
-model = AutoModelForCausalLM.from_pretrained(checkpoint, use_safetensors=True, local_files_only=True)
+tokenizer = AutoTokenizer.from_pretrained(checkpoint, dtype=torch.float16, legacy=False, local_files_only=True, use_safetensors=True, device=device)
+model = AutoModelForCausalLM.from_pretrained(checkpoint, dtype=torch.float16, use_safetensors=True, local_files_only=True)
 model.to(device)
 
-if os.getenv("INTERACTIVE_SYNTHETIC_GENERATION"):
-    role_instruction = input("\nInput an optional role instructions for the model>>>\n")
+generation_args = {
+    "num_beams": 2,
+    "early_stopping": True,
+    "max_new_tokens": 128000,
+    "do_sample": False,
+}
+
+if args.interactive:
+    sys_instruct = input("\nInput an optional role instructions for the model>>>\n")
     user_prompt = input("Input prompt>>>\n")
 else:
     with open(f"{BASE_DATA_DIR}/prompts/{args.prompt_file}", 'r') as f:
         prompt_data = json.load(f)
         prompt_title = prompt_data["prompt_title"]
-        role_instruction = "\n".join(prompt_data["system"])
+        sys_instruct = "\n".join(prompt_data["system"])
         user_prompt = "\n".join(prompt_data["user"])
     os.makedirs(f"{BASE_DATA_DIR}/{prompt_title}", exist_ok=True)
 
 conversation = []
-if isinstance(role_instruction, str) and isinstance(user_prompt, str):
-    conversation.append({"role": "user", "content": role_instruction})
+if isinstance(sys_instruct, str) and isinstance(user_prompt, str):
+    conversation.append({"role": "system", "content": sys_instruct})
     conversation.append({"role": "user", "content": user_prompt})
 
 start_time = time.time()
 text = tokenizer.apply_chat_template(
     conversation,
     tokenize=False,
-    add_generation_prompt=True
+    add_generation_prompt=True,
+    enable_thinking=True
 )
 model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
 
 generated_ids = model.generate(
     **model_inputs,
-    max_new_tokens=16384
+    **generation_args
 )
 end_time = time.time()
 elapsed_time = end_time - start_time
@@ -92,7 +118,7 @@ df = extract_csv(content, ["Output:", "CSV", "Synthetic Bank Transaction Data", 
 if df is None:
     out_file = f"{BASE_DATA_DIR}/gen_out_{prompt_title}.md"
     print(f"Header `Output:` can not be found in generated output. Saving output to {out_file}")
-    with open(out_file, "x") as f:
+    with open(out_file, "a") as f:
         f.write(content)
     sys.exit()
 
@@ -117,7 +143,7 @@ user_response = input(f"Create splits and save the generated synthetic data? (y/
 
 if user_response == "y":
     class_set_data = { "prompt_title": prompt_title, "description": "Transaction classes", "classes": classes}
-    with open(f"{BASE_DATA_DIR}/class_set.json", "x") as f:
+    with open(f"{BASE_DIR}/class_set.json", "x") as f:
         json.dump(class_set_data, f)
 
     create_split(df, f"{BASE_DATA_DIR}/{prompt_title}", (.7,.3), True)
