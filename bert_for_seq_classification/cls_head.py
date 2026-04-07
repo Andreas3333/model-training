@@ -17,7 +17,6 @@ class BertForSeqClassificationMLPHeadConfig(BertConfig):
 class BertForSeqClassificationMLPHead(PreTrainedModel):
     """
     Adds a classification head to google-bert/bert-base-uncased for multi class classification
-    for training only the head layer.
 
     For use with HF Trainer
     """

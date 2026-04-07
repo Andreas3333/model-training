@@ -235,3 +235,9 @@ temp/
 TODO*
 todo*
 Todo*
+
+# Notes
+.notes
+
+# SM-AI
+.sagemaker
