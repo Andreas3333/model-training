@@ -8,6 +8,7 @@ training techniques used:
 """
 
 import os
+import json
 import time
 from typing import Dict, Any
 from datetime import datetime
@@ -41,6 +42,7 @@ datasets.utils.logging.set_verbosity(0)
 transformers.utils.logging.set_verbosity(0)
 
 device = torch.accelerator.current_accelerator()
+print(f"Using device: {device}")
 
 BASE_MODEL = 'google-bert/bert-base-uncased'
 
@@ -284,7 +286,6 @@ execution_time = end_time - start_time
 
 
 ## Save the trained model
-
 trainer.save_model(best_model_dir)
 os.remove(f"{best_model_dir}/model.safetensors")
 
@@ -300,9 +301,9 @@ safetensors_save_file(classifier_state_dict, f"{best_model_dir}/classifier_head.
 console = Console()
 
 best_model_metrics = trainer.evaluate()
+with open(os.path.join(output_dir, "best_model_metrics.json"), "w") as f:
+    json.dump(best_model_metrics, f, indent=4)
 console.print("Best model metrics:", best_model_metrics)
-# trainer.save_metrics(split="test")
-
 
 
 ## Predictions
@@ -351,13 +352,13 @@ except Exception:
     target_names = [id2label[k] for k in sorted(id2label.keys(), key=int)]
 
 try:
-    report = classification_report(true_labels, preds, target_names=target_names, zero_division=0)
+    report = classification_report(true_labels, preds, labels=list(range(len(id2label))), target_names=target_names, zero_division=0)
     console.print(report)
 except Exception as e:
     console.print(f"Could not compute classification_report: {e}", style="red")
 
 try:
-    cm = confusion_matrix(true_labels, preds)
+    cm = confusion_matrix(true_labels, preds, labels=list(range(len(id2label))))
     cm_df = pd.DataFrame(cm, index=target_names, columns=target_names)
     cm_csv_path = os.path.join(output_dir, "confusion_matrix.csv")
     cm_df.to_csv(cm_csv_path)

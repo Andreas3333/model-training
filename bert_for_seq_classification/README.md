@@ -19,10 +19,10 @@ uv pip install -r requirements.txt
 ### Start a local training run
 
 ```bash
-uv run --env-file .env main.py --method head --epochs 20 --batch-size 16 --lr 0.000001 --tb-dir tb-local
+python main.py
 ```
 
-### Sagemaker
+### Sagemaker AI
 
 TODO: move `sm_job.py` over to sagemaker v3 and ModelTrainer
 
@@ -41,10 +41,10 @@ docker push <your-account-id>.dkr.ecr.<your-region>.amazonaws.com/<your-image-na
 
 - Start tensorboard server locally (optional)
 ```bash
-F_CPP_MIN_LOG_LEVEL=3 AWS_REGION=us-east-2 tensorboard --logdir s3://sagemaker-us-east-2-322994608254/text-classification-bert-sft/data/00_sft/tensorboard/
+cd bert_for_seq_classification
+F_CPP_MIN_LOG_LEVEL=3 AWS_REGION=<region> tensorboard --logdir s3://sagemaker/bert_for_seq_classification/data/00_sft/tensorboard/
 ```
 - Run training Job
 ```bash
-cd bert_for_seq_classification
-uv run sm_job.py
+python sm_job.py
 ```
